@@ -1,0 +1,2421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#003e5f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ExpenseSnap" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./assets/icon-192.png" />
+    <link rel="icon" href="./assets/icon-192.png" />
+    <title>ExpenseSnap Prototype</title>
+    <style>
+      :root {
+        --spoc-navy: #003e5f;
+        --spoc-deep-navy: #002f49;
+        --spoc-blue: #072e7a;
+        --spoc-orange: #ff3518;
+        --spoc-orange-dark: #d82912;
+        --spoc-ink: #102a3a;
+        --spoc-muted: #667887;
+        --spoc-line: #d7e0e6;
+        --spoc-panel: #ffffff;
+        --spoc-soft: #f3f7fa;
+        color: var(--spoc-ink);
+        background: var(--spoc-deep-navy);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background:
+          radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.14) 0 2px, transparent 2.5px) 0 0 / 24px 24px,
+          radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.09) 0 1.5px, transparent 2px) 0 0 / 18px 18px,
+          linear-gradient(145deg, var(--spoc-deep-navy), var(--spoc-navy) 48%, #062f48);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      .app-shell {
+        width: min(100%, 760px);
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 16px;
+      }
+
+      .topbar,
+      .section-heading,
+      .metrics,
+      .expense-row,
+      .receipt-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .topbar {
+        position: relative;
+        overflow: hidden;
+        align-items: center;
+        margin: -16px -16px 14px;
+        padding: 24px 20px 26px;
+        color: #fff;
+        background:
+          radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.18) 0 2px, transparent 2.4px) 0 0 / 24px 24px,
+          radial-gradient(circle at 74% 60%, rgba(255, 255, 255, 0.12) 0 1.5px, transparent 2px) 0 0 / 18px 18px,
+          linear-gradient(135deg, var(--spoc-deep-navy), var(--spoc-navy) 52%, #062f48);
+      }
+
+      .topbar::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 1.08rem;
+      }
+
+      h3 {
+        font-size: 1rem;
+      }
+
+      .eyebrow {
+        margin-bottom: 3px;
+        color: var(--spoc-muted);
+        font-size: 0.84rem;
+      }
+
+      .topbar .eyebrow {
+        color: rgba(255, 255, 255, 0.78);
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 68px;
+        height: 68px;
+        overflow: hidden;
+        border-radius: 8px;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .brand-mark img {
+        width: 68px;
+        height: auto;
+        max-width: none;
+        filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.22));
+      }
+
+      .brand-copy {
+        min-width: 0;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-left: auto;
+      }
+
+      .header-logo {
+        display: block;
+        width: clamp(190px, 25vw, 260px);
+        height: auto;
+        background: transparent;
+        filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
+      }
+
+      .tagline {
+        margin-top: 7px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .icon-button,
+      .text-button,
+      .primary-action {
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .icon-button {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--spoc-line);
+        background: var(--spoc-panel);
+        color: var(--spoc-blue);
+      }
+
+      .topbar .icon-button {
+        border-color: rgba(255, 255, 255, 0.32);
+        background: rgba(255, 255, 255, 0.13);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .export-menu {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: -2px 0 14px;
+        padding: 8px;
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+      }
+
+      .export-menu button {
+        min-height: 44px;
+        border: 0;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--spoc-blue);
+        font-weight: 900;
+        text-align: center;
+        padding: 0 13px;
+      }
+
+      .export-menu button:hover {
+        background: #edf4f8;
+      }
+
+      .export-ready {
+        display: grid;
+        gap: 12px;
+        margin: -2px 0 14px;
+        padding: 11px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--spoc-ink);
+        box-shadow: 0 14px 34px rgba(0, 24, 38, 0.12);
+      }
+
+      .export-ready-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .export-ready span {
+        font-weight: 800;
+      }
+
+      .export-ready-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .export-ready a,
+      .export-ready button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        border: 0;
+        padding: 0 12px;
+        border-radius: 8px;
+        background: var(--spoc-orange);
+        color: #fff;
+        font-weight: 900;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .export-ready button {
+        background: var(--spoc-blue);
+      }
+
+      .export-preview {
+        width: 100%;
+        min-height: 140px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #f7fafc;
+        color: var(--spoc-ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.78rem;
+        line-height: 1.45;
+        padding: 10px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin-bottom: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: var(--spoc-panel);
+        box-shadow: 0 14px 34px rgba(0, 24, 38, 0.18);
+      }
+
+      .metrics div {
+        min-width: 0;
+        padding: 13px 10px;
+        border-right: 1px solid var(--spoc-line);
+      }
+
+      .metrics div:last-child {
+        border-right: 0;
+      }
+
+      .metrics span {
+        display: block;
+        color: var(--spoc-muted);
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .metrics strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 1.02rem;
+        color: var(--spoc-blue);
+      }
+
+      .report-controls {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+      }
+
+      .month-step {
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.32);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.13);
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 900;
+      }
+
+      .report-field {
+        display: grid;
+        gap: 4px;
+      }
+
+      .report-field span {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .report-field input {
+        min-height: 42px;
+        border-color: rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--spoc-blue);
+        font-weight: 900;
+      }
+
+      .panel {
+        margin-bottom: 14px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        background: var(--spoc-panel);
+        box-shadow: 0 14px 34px rgba(0, 24, 38, 0.16);
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin-bottom: 14px;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+      }
+
+      .tabs button,
+      .segmented button {
+        min-height: 40px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.82);
+        font-weight: 800;
+      }
+
+      .tabs button.active,
+      .segmented button.active {
+        background: var(--spoc-orange);
+        color: #fff;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: #284250;
+        font-size: 0.86rem;
+        font-weight: 700;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--spoc-ink);
+        padding: 11px 12px;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid rgba(255, 53, 24, 0.22);
+        border-color: var(--spoc-orange);
+      }
+
+      textarea {
+        min-height: 78px;
+        resize: vertical;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        padding: 4px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: var(--spoc-soft);
+      }
+
+      .segmented button {
+        color: #465d6a;
+      }
+
+      .segmented button.active {
+        background: var(--spoc-blue);
+        color: #fff;
+      }
+
+      .receipt-box {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 1px dashed #a9bac6;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #f7fafc, #edf4f8);
+      }
+
+      .receipt-preview {
+        display: none;
+        width: 100%;
+        max-height: 220px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--spoc-line);
+        cursor: zoom-in;
+      }
+
+      .receipt-thumb {
+        width: 62px;
+        height: 62px;
+        object-fit: cover;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #edf4f8;
+      }
+
+      .receipt-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 62px;
+        height: 62px;
+        border: 1px dashed #a9bac6;
+        border-radius: 8px;
+        background: #f7fafc;
+        color: var(--spoc-blue);
+        font-size: 0.66rem;
+        font-weight: 900;
+        line-height: 1;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .receipt-placeholder span:first-child {
+        font-size: 1.15rem;
+      }
+
+      .receipt-placeholder:hover {
+        border-color: var(--spoc-orange);
+        background: #fff1ee;
+      }
+
+      .receipt-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 10px;
+        padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+        background: rgba(0, 24, 38, 0.92);
+      }
+
+      .receipt-modal.hidden {
+        display: none;
+      }
+
+      .receipt-modal-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: #fff;
+        font-weight: 900;
+      }
+
+      .receipt-modal-close {
+        min-height: 42px;
+        padding: 0 14px;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        font-weight: 900;
+      }
+
+      .receipt-modal img {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        object-fit: contain;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .scan-panel {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .scan-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .scan-status {
+        color: var(--spoc-muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .scan-results {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .scan-results li {
+        display: grid;
+        gap: 6px;
+        padding: 7px 8px;
+        border-radius: 8px;
+        background: var(--spoc-soft);
+        color: #284250;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .scan-results input,
+      .scan-results select {
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 0.86rem;
+        font-weight: 800;
+      }
+
+      .scan-results .checkbox-row {
+        min-height: 38px;
+        padding: 0;
+      }
+
+      .scan-text {
+        min-height: 96px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.78rem;
+      }
+
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #284250;
+        font-weight: 800;
+      }
+
+      .checkbox-row input {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--spoc-orange);
+      }
+
+      .text-button {
+        min-height: 42px;
+        padding: 0 12px;
+        background: var(--spoc-blue);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .primary-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        background: var(--spoc-orange);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .primary-action:hover,
+      .tabs button.active:hover {
+        background: var(--spoc-orange-dark);
+      }
+
+      .form-actions,
+      .row-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .form-actions {
+        display: grid;
+        grid-template-columns: 1fr auto;
+      }
+
+      .secondary-action {
+        min-height: 44px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: var(--spoc-panel);
+        color: var(--spoc-blue);
+        font-weight: 800;
+      }
+
+      .danger-action {
+        min-height: 38px;
+        border: 1px solid #ffd5cb;
+        border-radius: 8px;
+        background: #fff1ee;
+        color: #8a220f;
+        font-weight: 800;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .audit-list {
+        display: grid;
+        gap: 10px;
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .audit-list li {
+        display: grid;
+        gap: 8px;
+        padding: 11px 12px;
+        border-radius: 8px;
+        background: #fff1ee;
+        color: #8a220f;
+        border-left: 4px solid var(--spoc-orange);
+      }
+
+      .audit-list button {
+        width: fit-content;
+        min-height: 34px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--spoc-orange);
+        color: #fff;
+        font-weight: 800;
+        padding: 0 10px;
+      }
+
+      .empty-state {
+        margin-top: 12px;
+        color: #4d6877;
+      }
+
+      .expense-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .expense-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .expense-row p {
+        margin-top: 4px;
+        color: var(--spoc-muted);
+        font-size: 0.84rem;
+      }
+
+      .expense-row strong {
+        white-space: nowrap;
+      }
+
+      .expense-meta {
+        min-width: 0;
+      }
+
+      .expense-amount-actions {
+        display: grid;
+        justify-items: end;
+        gap: 10px;
+      }
+
+      .row-actions button {
+        min-height: 34px;
+        padding: 0 10px;
+        border-radius: 8px;
+        font-weight: 800;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        margin-top: 7px;
+        padding: 0 8px;
+        border-radius: 999px;
+        background: #edf4f8;
+        color: #355262;
+        font-size: 0.74rem;
+        font-weight: 800;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .pill.good {
+        background: #e7f7ef;
+        color: #14613d;
+      }
+
+      .pill.warn {
+        background: #fff1ee;
+        color: #8a220f;
+      }
+
+      .pill.neutral {
+        background: #edf4f8;
+        color: #355262;
+      }
+
+      .danger {
+        color: #8a220f;
+      }
+
+      .settings-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .category-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .category-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .favorite-toggle {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--spoc-line);
+        border-radius: 8px;
+        background: #f7fafc;
+        color: #8aa0ad;
+        font-size: 1.15rem;
+        font-weight: 900;
+      }
+
+      .favorite-toggle.active {
+        border-color: #ffd1c8;
+        background: #fff1ee;
+        color: var(--spoc-orange);
+      }
+
+      .category-name {
+        min-width: 0;
+        font-weight: 800;
+      }
+
+      .category-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .category-actions button {
+        min-height: 34px;
+        padding: 0 10px;
+        border-radius: 8px;
+        font-weight: 800;
+      }
+
+      @media (max-width: 460px) {
+        .app-shell {
+          padding: 14px;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          padding: 18px 14px 22px;
+        }
+
+        .brand-lockup {
+          gap: 11px;
+        }
+
+        .brand-mark {
+          width: 54px;
+          height: 54px;
+        }
+
+        .brand-mark img {
+          width: 54px;
+        }
+
+        .header-actions {
+          align-items: flex-end;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .header-logo {
+          width: 136px;
+        }
+
+        .metrics div {
+          padding: 11px 7px;
+        }
+
+        .metrics strong {
+          font-size: 0.96rem;
+        }
+
+        .report-controls {
+          grid-template-columns: auto 1fr auto;
+        }
+
+        .export-menu {
+          grid-template-columns: 1fr;
+        }
+
+        .tabs {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .form-actions {
+          grid-template-columns: 1fr;
+        }
+
+        .expense-row {
+          grid-template-columns: auto 1fr;
+        }
+
+        .expense-amount-actions {
+          grid-column: 1 / -1;
+          justify-items: start;
+        }
+
+        .settings-form,
+        .category-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <img src="./assets/spoc-symbol-transparent.png" alt="" />
+          </div>
+          <div class="brand-copy">
+            <p class="eyebrow" id="periodLabel">Current report</p>
+            <h1>ExpenseSnap</h1>
+            <p class="tagline">Powered by people. Driven by purpose.</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <img class="header-logo" src="./assets/spoc-logo-white-transparent.png" alt="SPOC energy" />
+          <button class="icon-button" id="exportButton" title="Export report" aria-label="Export report" aria-expanded="false">⇩</button>
+        </div>
+      </section>
+
+      <section class="export-menu hidden" id="exportMenu" aria-label="Export options">
+        <button type="button" data-export-format="csv">Export CSV for Excel</button>
+        <button type="button" data-export-format="json">Export JSON backup</button>
+        <button type="button" id="importJsonButton">Import JSON backup</button>
+        <input class="hidden" id="importJsonInput" type="file" accept="application/json,.json" />
+      </section>
+
+      <section class="export-ready hidden" id="exportReady" aria-live="polite">
+        <div class="export-ready-header">
+          <span id="exportReadyText">Export ready.</span>
+          <div class="export-ready-actions">
+            <a id="exportReadyLink" href="#" download target="_blank" rel="noreferrer">Download</a>
+            <button id="copyExport" type="button">Copy</button>
+          </div>
+        </div>
+        <textarea class="export-preview" id="exportPreview" readonly></textarea>
+      </section>
+
+      <section class="metrics" aria-label="Monthly overview">
+        <div>
+          <span>Total</span>
+          <strong id="totalAmount">$0.00</strong>
+        </div>
+        <div>
+          <span>Expenses</span>
+          <strong id="expenseCount">0</strong>
+        </div>
+        <div>
+          <span>Needs Review</span>
+          <strong id="issueCount">0</strong>
+        </div>
+      </section>
+
+      <section class="report-controls" aria-label="Report period">
+        <button class="month-step" id="previousMonth" type="button" aria-label="Previous month">‹</button>
+        <label class="report-field">
+          <span>Report Month</span>
+          <input id="reportMonth" type="month" />
+        </label>
+        <button class="month-step" id="nextMonth" type="button" aria-label="Next month">›</button>
+      </section>
+
+      <nav class="tabs" aria-label="Views">
+        <button class="active" type="button" data-tab="capture">Capture</button>
+        <button type="button" data-tab="audit">Audit</button>
+        <button type="button" data-tab="expenses">Expenses</button>
+        <button type="button" data-tab="settings">Settings</button>
+      </nav>
+
+      <section class="panel" data-panel="capture">
+        <div class="section-heading">
+          <h2 id="formTitle">New Expense</h2>
+          <button class="icon-button" id="voiceButton" title="Voice draft" aria-label="Voice draft">◉</button>
+        </div>
+
+        <form class="form-grid" id="expenseForm">
+          <label>
+            Merchant
+            <input id="merchant" autocomplete="organization" placeholder="Marriott" required />
+          </label>
+
+          <label>
+            Amount
+            <input id="amount" inputmode="decimal" placeholder="35.19" required />
+          </label>
+
+          <label>
+            Date
+            <input id="date" type="date" required />
+          </label>
+
+          <label>
+            Category
+            <select id="category">
+              <option value="">Choose category</option>
+            </select>
+          </label>
+
+          <label>
+            Business Purpose
+            <input id="businessPurpose" placeholder="Business Dinner" />
+          </label>
+
+          <label>
+            Comments
+            <textarea id="comments" placeholder="Optional details"></textarea>
+          </label>
+
+          <div class="segmented" role="group" aria-label="Payment type">
+            <button class="active" type="button" data-payment="Corporate Card">Corporate Card</button>
+            <button type="button" data-payment="Out of Pocket">Out of Pocket</button>
+          </div>
+
+          <div class="receipt-box">
+            <div class="receipt-actions">
+              <div>
+                <h3>Receipt</h3>
+                <p class="eyebrow" id="receiptStatus">No receipt attached</p>
+              </div>
+              <label class="text-button" for="receiptInput">Camera</label>
+            </div>
+            <input class="hidden" id="receiptInput" type="file" accept="image/*" capture="environment" />
+            <img class="receipt-preview" id="receiptPreview" alt="Receipt preview" />
+            <div class="scan-panel hidden" id="scanPanel">
+              <div class="scan-actions">
+                <button class="secondary-action" id="scanReceipt" type="button">Scan Receipt</button>
+                <button class="secondary-action hidden" id="applyScan" type="button">Apply Scan</button>
+              </div>
+              <p class="scan-status" id="scanStatus">Attach a receipt to scan it.</p>
+              <ul class="scan-results hidden" id="scanResults"></ul>
+              <textarea class="scan-text hidden" id="scanText" readonly></textarea>
+            </div>
+            <label class="checkbox-row">
+              <input id="receiptItemized" type="checkbox" checked />
+              Receipt is itemized
+            </label>
+            <button class="secondary-action hidden" id="clearReceipt" type="button">Remove Receipt</button>
+          </div>
+
+          <div class="form-actions">
+            <button class="primary-action" id="saveButton" type="submit">+ Add Expense</button>
+            <button class="secondary-action hidden" id="cancelEdit" type="button">Cancel Edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel hidden" data-panel="audit">
+        <div class="section-heading">
+          <h2>Audit</h2>
+          <button class="secondary-action" id="runAudit" type="button">Run Audit</button>
+        </div>
+        <ul class="audit-list" id="auditList"></ul>
+        <p class="empty-state" id="auditEmpty">No issues found.</p>
+      </section>
+
+      <section class="panel hidden" data-panel="expenses">
+        <div class="section-heading">
+          <h2>Recent Expenses</h2>
+          <button class="secondary-action" id="clearAll" type="button">Clear All</button>
+        </div>
+        <div class="expense-list" id="expenseList"></div>
+        <p class="empty-state" id="expenseEmpty">No expenses captured yet.</p>
+      </section>
+
+      <section class="panel hidden" data-panel="settings">
+        <div class="section-heading">
+          <h2>Categories</h2>
+          <button class="secondary-action" id="resetCategories" type="button">Reset Defaults</button>
+        </div>
+        <form class="settings-form" id="categoryForm">
+          <label>
+            Category Name
+            <input id="categoryName" placeholder="Meals- New Employee" />
+          </label>
+          <button class="primary-action" id="saveCategory" type="submit">Add Category</button>
+        </form>
+        <div class="category-list" id="categoryList"></div>
+        <p class="empty-state" id="categoryEmpty">No categories configured.</p>
+      </section>
+
+      <div class="receipt-modal hidden" id="receiptModal" role="dialog" aria-modal="true" aria-label="Full receipt preview">
+        <div class="receipt-modal-bar">
+          <span>Receipt Preview</span>
+          <button class="receipt-modal-close" id="closeReceiptModal" type="button">Close</button>
+        </div>
+        <img id="receiptFullPreview" alt="Full receipt preview" />
+      </div>
+    </main>
+
+    <script>
+      const defaultCategories = [
+        { name: "Airfare- Jeramy Bailey", favorite: true },
+        { name: "Auto Expense- Jeramy Bailey", favorite: true },
+        { name: "Car Rental- Jeramy Bailey", favorite: true },
+        { name: "Cell Phone- Jeramy Bailey", favorite: true },
+        { name: "Customer Meals- Jeramy Bailey", favorite: true },
+        { name: "Engineering Tools- Jeramy Bailey", favorite: true },
+        { name: "Entertainment- Jeramy Bailey", favorite: true },
+        { name: "Lodging- Jeramy Bailey", favorite: true },
+        { name: "Meals- Jeramy Bailey", favorite: true },
+        { name: "Parking- Jeramy Bailey", favorite: true },
+        { name: "Taxi- Jeramy Bailey", favorite: true },
+        { name: "Tolls- Jeramy Bailey", favorite: true },
+        { name: "Advertising- Grid", favorite: true },
+        { name: "Advertising- SPOC", favorite: true },
+        { name: "Building Maintenance", favorite: false },
+        { name: "Company Auto Insurance", favorite: false },
+        { name: "Company Liability Insurance", favorite: false },
+        { name: "Company Meals & Events", favorite: true },
+        { name: "Computer Equipment (only use for over $2,500)", favorite: false },
+        { name: "Conferences & Seminars- Grid", favorite: true },
+        { name: "Customer Gifts", favorite: false },
+        { name: "Donations/ Contributions", favorite: false },
+        { name: "Dues & Subscriptions- Grid", favorite: true },
+        { name: "Equipment (only use for over $2,500)", favorite: false },
+        { name: "Office Supplies- Grid", favorite: true },
+        { name: "R&D Supply- Grid", favorite: true },
+        { name: "Shop Supplies- Grid", favorite: true },
+        { name: "Shop Tools- Grid", favorite: true },
+      ];
+
+      const categorySignals = [
+        {
+          category: "Airfare- Jeramy Bailey",
+          purpose: "Business Travel",
+          strong: [/\b(delta|united|southwest|american airlines|aa\.com|jetblue|alaska airlines|spirit|frontier)\b/i, /\b(airfare|flight|boarding pass|ticket number|itinerary|airline)\b/i],
+          weak: [/\b(airport|tsa|gate|seat|depart|arrival)\b/i],
+        },
+        {
+          category: "Auto Expense- Jeramy Bailey",
+          purpose: "Fuel",
+          strong: [/\b(fuel total|fuel|gasoline|diesel|unleaded|regular|premium|gallons?|price\s*(?:\/|per)\s*gal|pump)\b/i, /\b(shell|chevron|exxon|mobil|bp|circle k|pilot|love'?s|valero|murphy|quicktrip|quiktrip|wawa|racetrac|speedway)\b/i],
+          weak: [/\b(auto|vehicle|car wash|oil change|service station)\b/i],
+        },
+        {
+          category: "Car Rental- Jeramy Bailey",
+          purpose: "Business Travel",
+          strong: [/\b(hertz|avis|budget|enterprise|national car|alamo|thrifty|dollar rent|rental car|rent a car)\b/i],
+          weak: [/\b(vehicle rental|car rental|rental agreement)\b/i],
+        },
+        {
+          category: "Cell Phone- Jeramy Bailey",
+          purpose: "Cell Phone",
+          strong: [/\b(verizon|at&t|att wireless|t-mobile|tmobile|spectrum mobile|xfinity mobile|cell phone|wireless bill)\b/i],
+          weak: [/\b(mobile|phone service|data plan)\b/i],
+        },
+        {
+          category: "Customer Meals- Jeramy Bailey",
+          purpose: "Business Dinner",
+          strong: [/\b(client meal|customer meal|customer dinner|client dinner|business dinner|business lunch|entertainment meal)\b/i],
+          weak: [/\b(restaurant|grill|steakhouse|bar and grill|cafe|diner|receipt tip|server)\b/i],
+        },
+        {
+          category: "Engineering Tools- Jeramy Bailey",
+          purpose: "Engineering Tools",
+          strong: [/\b(solidworks|autodesk|matlab|labview|github|gitlab|cad|cam|engineering tool|software license|developer tool)\b/i],
+          weak: [/\b(tool subscription|technical software|simulation|design software)\b/i],
+        },
+        {
+          category: "Entertainment- Jeramy Bailey",
+          purpose: "Entertainment",
+          strong: [/\b(entertainment|event ticket|tickets|venue|arena|stadium|topgolf|bowling|golf|theater|concert)\b/i],
+          weak: [/\b(admission|show|game|outing)\b/i],
+        },
+        {
+          category: "Lodging- Jeramy Bailey",
+          purpose: "Business Travel",
+          strong: [/\b(marriott|hilton|hyatt|hampton inn|holiday inn|ihg|westin|sheraton|hotel|motel|lodging|inn & suites|folio)\b/i],
+          weak: [/\b(room charge|occupancy tax|check in|check out)\b/i],
+        },
+        {
+          category: "Meals- Jeramy Bailey",
+          purpose: "Business Dinner",
+          strong: [/\b(restaurant|grill|cafe|diner|bistro|kitchen|barbecue|bbq|chili'?s|chipotle|panera|starbucks|mcdonald|wendy|subway|receipt tip|server)\b/i],
+          weak: [/\b(food|meal|lunch|dinner|breakfast|beverage)\b/i],
+        },
+        {
+          category: "Parking- Jeramy Bailey",
+          purpose: "Business Travel",
+          strong: [/\b(parking|garage|meter|parkmobile|pay by plate|valet)\b/i],
+          weak: [/\b(lot|space number)\b/i],
+        },
+        {
+          category: "Taxi- Jeramy Bailey",
+          purpose: "Business Travel",
+          strong: [/\b(uber|lyft|taxi|cab|rideshare|ride share|black car)\b/i],
+          weak: [/\b(trip fare|driver|pickup|dropoff)\b/i],
+        },
+        {
+          category: "Tolls- Jeramy Bailey",
+          purpose: "Business Travel",
+          strong: [/\b(toll|turnpike|ez-pass|ezpass|e-zpass|txtag|sunpass|peach pass|fastrak|platepay)\b/i],
+          weak: [/\b(road fee|bridge toll)\b/i],
+        },
+        {
+          category: "Advertising- Grid",
+          purpose: "Advertising",
+          strong: [/\b(grid advertising|grid ad|google ads.*grid|facebook ads.*grid|linkedin ads.*grid)\b/i],
+          weak: [/\b(grid campaign|grid marketing)\b/i],
+        },
+        {
+          category: "Advertising- SPOC",
+          purpose: "Advertising",
+          strong: [/\b(spoc advertising|spoc ad|google ads|facebook ads|linkedin ads|marketing campaign|sponsored post|print ad|advertising)\b/i],
+          weak: [/\b(marketing|promotion|media buy|creative)\b/i],
+        },
+        {
+          category: "Building Maintenance",
+          purpose: "Building Maintenance",
+          strong: [/\b(building maintenance|facility maintenance|hvac|plumbing|electrical repair|janitorial|cleaning service|landscaping|pest control)\b/i],
+          weak: [/\b(repair|maintenance|facility|property)\b/i],
+        },
+        {
+          category: "Company Auto Insurance",
+          purpose: "Company Auto Insurance",
+          strong: [/\b(auto insurance|vehicle insurance|fleet insurance|commercial auto|progressive|geico|state farm|allstate)\b/i],
+          weak: [/\b(policy premium|insurance premium)\b/i],
+        },
+        {
+          category: "Company Liability Insurance",
+          purpose: "Company Liability Insurance",
+          strong: [/\b(liability insurance|general liability|professional liability|umbrella policy|workers comp|insurance agency)\b/i],
+          weak: [/\b(policy|premium|coverage|deductible)\b/i],
+        },
+        {
+          category: "Company Meals & Events",
+          purpose: "Company Meals & Events",
+          strong: [/\b(company meal|team lunch|team dinner|employee meal|company event|staff event|catering|caterer|office lunch)\b/i],
+          weak: [/\b(group meal|event food|meeting lunch)\b/i],
+        },
+        {
+          category: "Computer Equipment (only use for over $2,500)",
+          purpose: "Computer Equipment",
+          strong: [/\b(computer equipment|laptop|desktop|workstation|server|macbook|dell|lenovo|hp computer|monitor|dock)\b/i],
+          weak: [/\b(hardware|computer|keyboard|mouse|display|printer)\b/i],
+        },
+        {
+          category: "Conferences & Seminars- Grid",
+          purpose: "Exhibition Fee",
+          strong: [/\b(conference|seminar|expo|trade show|registration fee|exhibition fee|booth fee|event registration)\b/i],
+          weak: [/\b(attendee|badge|sponsor package|summit)\b/i],
+        },
+        {
+          category: "Customer Gifts",
+          purpose: "Customer Gifts",
+          strong: [/\b(customer gift|client gift|gift basket|branded gift|promo gift|promotional item|swag)\b/i],
+          weak: [/\b(gift|flowers|gift card|recognition)\b/i],
+        },
+        {
+          category: "Donations/ Contributions",
+          purpose: "Donation",
+          strong: [/\b(donation|charitable contribution|contribution|nonprofit|foundation|sponsorship donation)\b/i],
+          weak: [/\b(charity|fundraiser|giving)\b/i],
+        },
+        {
+          category: "Dues & Subscriptions- Grid",
+          purpose: "Dues & Subscriptions",
+          strong: [/\b(subscription|membership|dues|annual fee|monthly fee|saas|software subscription|renewal)\b/i],
+          weak: [/\b(license renewal|account renewal|service plan)\b/i],
+        },
+        {
+          category: "Equipment (only use for over $2,500)",
+          purpose: "Equipment",
+          strong: [/\b(equipment purchase|capital equipment|machinery|industrial equipment|pump|drive|motor|controller|panel)\b/i],
+          weak: [/\b(equipment|machine|asset)\b/i],
+        },
+        {
+          category: "Office Supplies- Grid",
+          purpose: "Office Supplies",
+          strong: [/\b(office supplies|staples|office depot|office max|paper|printer ink|toner|pens|notebook|folders|desk supplies)\b/i, /\b(staples|office depot|office max)\b/i, /\b(printer ink|toner|copy paper|pens|notebook|folders|labels|envelopes)\b/i],
+          weak: [/\b(supplies|copy paper|labels|envelopes)\b/i],
+        },
+        {
+          category: "R&D Supply- Grid",
+          purpose: "R&D Supply",
+          strong: [/\b(r&d supply|research supply|prototype material|lab supply|test material|experimental|mcmaster|grainger)\b/i],
+          weak: [/\b(prototype|research|development|lab|testing)\b/i],
+        },
+        {
+          category: "Shop Supplies- Grid",
+          purpose: "Shop Supplies",
+          strong: [/\b(shop supplies|fastenal|grainger|mcmaster|uline|welding supply|safety supplies|ppe|gloves|abrasive|lubricant|cleaner)\b/i],
+          weak: [/\b(shop|consumables|hardware|parts|materials)\b/i],
+        },
+        {
+          category: "Shop Tools- Grid",
+          purpose: "Shop Tools",
+          strong: [/\b(shop tools|tool purchase|harbor freight|snap-on|milwaukee|dewalt|makita|drill|saw|grinder|wrench|toolbox)\b/i],
+          weak: [/\b(tool|tools|hand tool|power tool)\b/i],
+        },
+      ];
+
+      const storageKey = "expense-snap-prototype-expenses";
+      const categoryStorageKey = "expense-snap-prototype-categories";
+      const categorySelect = document.querySelector("#category");
+      const categoryForm = document.querySelector("#categoryForm");
+      const categoryName = document.querySelector("#categoryName");
+      const categoryList = document.querySelector("#categoryList");
+      const categoryEmpty = document.querySelector("#categoryEmpty");
+      const resetCategories = document.querySelector("#resetCategories");
+      const form = document.querySelector("#expenseForm");
+      const merchantInput = document.querySelector("#merchant");
+      const amountInput = document.querySelector("#amount");
+      const dateInput = document.querySelector("#date");
+      const purposeInput = document.querySelector("#businessPurpose");
+      const commentsInput = document.querySelector("#comments");
+      const receiptInput = document.querySelector("#receiptInput");
+      const receiptPreview = document.querySelector("#receiptPreview");
+      const receiptStatus = document.querySelector("#receiptStatus");
+      const receiptItemized = document.querySelector("#receiptItemized");
+      const clearReceipt = document.querySelector("#clearReceipt");
+      const scanPanel = document.querySelector("#scanPanel");
+      const scanReceiptButton = document.querySelector("#scanReceipt");
+      const applyScanButton = document.querySelector("#applyScan");
+      const scanStatus = document.querySelector("#scanStatus");
+      const scanResults = document.querySelector("#scanResults");
+      const scanText = document.querySelector("#scanText");
+      const receiptModal = document.querySelector("#receiptModal");
+      const receiptFullPreview = document.querySelector("#receiptFullPreview");
+      const closeReceiptModal = document.querySelector("#closeReceiptModal");
+      const expenseList = document.querySelector("#expenseList");
+      const expenseEmpty = document.querySelector("#expenseEmpty");
+      const auditList = document.querySelector("#auditList");
+      const auditEmpty = document.querySelector("#auditEmpty");
+      const totalAmount = document.querySelector("#totalAmount");
+      const expenseCount = document.querySelector("#expenseCount");
+      const issueCount = document.querySelector("#issueCount");
+      const periodLabel = document.querySelector("#periodLabel");
+      const reportMonth = document.querySelector("#reportMonth");
+      const previousMonth = document.querySelector("#previousMonth");
+      const nextMonth = document.querySelector("#nextMonth");
+      const exportButton = document.querySelector("#exportButton");
+      const exportMenu = document.querySelector("#exportMenu");
+      const exportReady = document.querySelector("#exportReady");
+      const exportReadyText = document.querySelector("#exportReadyText");
+      const exportReadyLink = document.querySelector("#exportReadyLink");
+      const exportPreview = document.querySelector("#exportPreview");
+      const copyExport = document.querySelector("#copyExport");
+      const importJsonButton = document.querySelector("#importJsonButton");
+      const importJsonInput = document.querySelector("#importJsonInput");
+      const formTitle = document.querySelector("#formTitle");
+      const saveButton = document.querySelector("#saveButton");
+      const cancelEdit = document.querySelector("#cancelEdit");
+      let paymentType = "Corporate Card";
+      let receiptDataUrl = "";
+      let editingExpenseId = "";
+      let hasExportPreview = false;
+      let lastReceiptScan = null;
+
+      const today = new Date();
+      reportMonth.value = monthKey(today);
+      dateInput.value = defaultDateForMonth(reportMonth.value);
+      updatePeriodLabel();
+
+      function loadExpenses() {
+        try {
+          return JSON.parse(localStorage.getItem(storageKey)) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveExpenses(expenses) {
+        localStorage.setItem(storageKey, JSON.stringify(expenses));
+      }
+
+      function normalizeCategory(category) {
+        if (typeof category === "string") return { name: category.trim(), favorite: category.includes("Jeramy Bailey") };
+        return {
+          name: String(category.name || "").trim(),
+          favorite: Boolean(category.favorite),
+        };
+      }
+
+      function uniqueCategories(categories) {
+        const seen = new Set();
+        return categories
+          .map(normalizeCategory)
+          .filter((category) => {
+            const key = category.name.toLowerCase();
+            if (!category.name || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+      }
+
+      function loadCategories() {
+        try {
+          const storedCategories = JSON.parse(localStorage.getItem(categoryStorageKey));
+          if (Array.isArray(storedCategories) && storedCategories.length) return uniqueCategories(storedCategories);
+        } catch {
+        }
+        return uniqueCategories(defaultCategories);
+      }
+
+      function saveCategories(categories) {
+        localStorage.setItem(categoryStorageKey, JSON.stringify(uniqueCategories(categories)));
+      }
+
+      function sortedCategories(categories) {
+        return [...categories].sort((a, b) => {
+          if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+      }
+
+      function renderCategorySelect(selectedValue = categorySelect.value) {
+        const categories = sortedCategories(loadCategories());
+        const favorites = categories.filter((category) => category.favorite);
+        const others = categories.filter((category) => !category.favorite);
+
+        categorySelect.innerHTML = '<option value="">Choose category</option>';
+
+        const appendGroup = (label, groupCategories) => {
+          if (!groupCategories.length) return;
+          const group = document.createElement("optgroup");
+          group.label = label;
+          groupCategories.forEach((category) => {
+            const option = document.createElement("option");
+            option.value = category.name;
+            option.textContent = category.name;
+            group.append(option);
+          });
+          categorySelect.append(group);
+        };
+
+        appendGroup("Favorites", favorites);
+        appendGroup("All Categories", others);
+        categorySelect.value = categories.some((category) => category.name === selectedValue) ? selectedValue : "";
+      }
+
+      function renderCategories() {
+        const categories = sortedCategories(loadCategories());
+        categoryList.innerHTML = "";
+        categories.forEach((category) => {
+          const row = document.createElement("article");
+          row.className = "category-row";
+          row.innerHTML = `
+            <button class="favorite-toggle ${category.favorite ? "active" : ""}" type="button" data-toggle-favorite="${escapeAttribute(category.name)}" aria-label="${category.favorite ? "Remove favorite" : "Make favorite"}">${category.favorite ? "★" : "☆"}</button>
+            <span class="category-name">${escapeHtml(category.name)}</span>
+            <div class="category-actions">
+              <button class="secondary-action" type="button" data-delete-category="${escapeAttribute(category.name)}">Delete</button>
+            </div>
+          `;
+          categoryList.append(row);
+        });
+        categoryEmpty.classList.toggle("hidden", categories.length > 0);
+        renderCategorySelect();
+      }
+
+      function money(value) {
+        return `$${Number(value || 0).toFixed(2)}`;
+      }
+
+      function monthKey(date) {
+        const value = date instanceof Date ? date : new Date(`${date}T00:00:00`);
+        return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+      }
+
+      function localDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      }
+
+      function monthLabel(key) {
+        const [year, month] = key.split("-").map(Number);
+        return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(year, month - 1, 1));
+      }
+
+      function defaultDateForMonth(key) {
+        const currentMonth = monthKey(new Date());
+        if (key === currentMonth) return localDateKey(new Date());
+        return `${key}-01`;
+      }
+
+      function selectedMonthExpenses() {
+        return loadExpenses().filter((expense) => monthKey(expense.date) === reportMonth.value);
+      }
+
+      function updatePeriodLabel() {
+        periodLabel.textContent = monthLabel(reportMonth.value);
+      }
+
+      function shiftReportMonth(direction) {
+        const [year, month] = reportMonth.value.split("-").map(Number);
+        const next = new Date(year, month - 1 + direction, 1);
+        reportMonth.value = monthKey(next);
+        updatePeriodLabel();
+        if (!editingExpenseId) dateInput.value = defaultDateForMonth(reportMonth.value);
+        render();
+      }
+
+      function categoryExists(categoryName) {
+        return loadCategories().some((category) => category.name === categoryName);
+      }
+
+      function scoreSignalGroup(text, patterns, score) {
+        return patterns.reduce((total, pattern) => total + (pattern.test(text) ? score : 0), 0);
+      }
+
+      function categorySignalMatches(input) {
+        const text = String(input || "").toLowerCase();
+        return categorySignals
+          .filter((signal) => categoryExists(signal.category))
+          .map((signal) => ({
+            ...signal,
+            score: scoreSignalGroup(text, signal.strong, 5) + scoreSignalGroup(text, signal.weak, 2),
+          }))
+          .filter((signal) => signal.score > 0)
+          .sort((a, b) => b.score - a.score || Number(b.category.includes("Jeramy Bailey")) - Number(a.category.includes("Jeramy Bailey")));
+      }
+
+      function suggestCategory(input) {
+        return categorySignalMatches(input)[0]?.category || "";
+      }
+
+      function suggestBusinessPurpose(input, category) {
+        const exactCategorySignal = categorySignals.find((signal) => signal.category === category);
+        if (exactCategorySignal?.purpose) return exactCategorySignal.purpose;
+        return categorySignalMatches(`${input} ${category}`)[0]?.purpose || "";
+      }
+
+      function isFuelReceiptText(text) {
+        return /\b(fuel|gasoline|diesel|unleaded|regular|premium|gallons?|gal|price\s*(?:\/|per)\s*gal|fuel\s*total|pump)\b/i.test(text);
+      }
+
+      function parseMoneyValues(line) {
+        const values = [];
+        const isLabeledAmountLine = /\b(fuel\s*total|grand\s*total|amount\s*due|balance|credit|total|paid)\b/i.test(line);
+        const isMeasurementLine = /\b(price\s*(?:\/|per)\s*gal|gallons?|gal|qty|quantity)\b/i.test(line) && !isLabeledAmountLine;
+        const patterns = [
+          /(?:\$|s)\s*([0-9oOlI]{1,4})\s*[.,:;]\s*([0-9oOlI]{2})/gi,
+        ];
+
+        if (isLabeledAmountLine && !isMeasurementLine) {
+          patterns.push(/\b([0-9oOlI]{1,4})\s*[.,:;]\s*([0-9oOlI]{2})\b/gi);
+        }
+
+        patterns.forEach((pattern) => {
+          for (const match of line.matchAll(pattern)) {
+            const dollars = normalizeOcrDigits(match[1]);
+            const cents = normalizeOcrDigits(match[2]);
+            const value = Number(`${dollars}.${cents}`);
+            if (Number.isFinite(value) && value >= 1) values.push(value);
+          }
+        });
+
+        return [...new Set(values)].filter((value) => value > 0);
+      }
+
+      function normalizeOcrDigits(value) {
+        return String(value)
+          .replace(/[oO]/g, "0")
+          .replace(/[lI]/g, "1");
+      }
+
+      function parseDecimalValue(value) {
+        const normalized = normalizeOcrDigits(value).replace(",", ".").replace(/[^0-9.]/g, "");
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function roundMoney(value) {
+        return Math.round(value * 100) / 100;
+      }
+
+      function parseFuelMath(lines) {
+        const joined = lines.join("\n");
+        const gallonsMatch = joined.match(/\b([0-9oOlI]{1,3}[.,][0-9oOlI]{2,4})\s*(?:g|gal|gallons?)\b/i);
+        const priceMatch = joined.match(/\b(?:price\s*(?:\/|per)\s*gal|ppg|price)\D{0,12}\$?\s*([0-9oOlI]{1,2}[.,][0-9oOlI]{3})\b/i);
+        const gallons = gallonsMatch ? parseDecimalValue(gallonsMatch[1]) : 0;
+        const pricePerGallon = priceMatch ? parseDecimalValue(priceMatch[1]) : 0;
+        const calculatedAmount = gallons && pricePerGallon ? roundMoney(gallons * pricePerGallon) : 0;
+
+        return {
+          gallons,
+          pricePerGallon,
+          calculatedAmount,
+          sourceLine: calculatedAmount ? `${gallons.toFixed(3)} gal x $${pricePerGallon.toFixed(3)} = $${calculatedAmount.toFixed(2)}` : "",
+        };
+      }
+
+      function pickReceiptAmount(amountLines, isFuelReceipt = false, fuelMath = null) {
+        if (isFuelReceipt && fuelMath?.calculatedAmount) {
+          const labeledCandidates = amountLines
+            .filter((item) => /\b(fuel\s*total|grand\s*total|amount\s*due|balance|credit|total)\b/i.test(item.line) && !/\b(subtotal|sub total|tax|tip|price\s*(?:\/|per)\s*gal|gal|gallon)\b/i.test(item.line))
+            .flatMap((item) => item.amounts.map((amount) => ({ amount, line: item.line })));
+          const matchingCandidate = labeledCandidates.find((candidate) => Math.abs(candidate.amount - fuelMath.calculatedAmount) <= 0.05);
+          const candidates = [
+            { amount: fuelMath.calculatedAmount, line: fuelMath.sourceLine },
+            ...labeledCandidates,
+          ];
+
+          return {
+            amount: fuelMath.calculatedAmount,
+            sourceLine: matchingCandidate
+              ? `${fuelMath.sourceLine}; matched OCR line: ${matchingCandidate.line}`
+              : `${fuelMath.sourceLine}; fuel math used over OCR total`,
+            candidates,
+          };
+        }
+
+        const labeledTotalLines = amountLines.filter((item) => /\b(fuel\s*total|grand\s*total|amount\s*due|balance|credit|total)\b/i.test(item.line) && !/\b(subtotal|sub total|tax|tip|price\s*(?:\/|per)\s*gal|gal|gallon)\b/i.test(item.line));
+        if (labeledTotalLines.length) {
+          const candidates = labeledTotalLines.flatMap((item) => item.amounts.map((amount) => ({ amount, line: item.line })));
+          const best = candidates.sort((a, b) => b.amount - a.amount)[0];
+          return { amount: best.amount, sourceLine: best.line, candidates };
+        }
+
+        if (isFuelReceipt) return { amount: 0, sourceLine: "", candidates: [] };
+
+        const candidates = amountLines.flatMap((item) => item.amounts.map((amount) => ({ amount, line: item.line })));
+        const best = candidates.sort((a, b) => b.amount - a.amount)[0];
+        return { amount: best?.amount || 0, sourceLine: best?.line || "", candidates };
+      }
+
+      function resetScanState(message = "Attach a receipt to scan it.") {
+        lastReceiptScan = null;
+        scanStatus.textContent = message;
+        scanResults.innerHTML = "";
+        scanResults.classList.add("hidden");
+        scanText.value = "";
+        scanText.classList.add("hidden");
+        applyScanButton.classList.add("hidden");
+      }
+
+      function parseReceiptText(text) {
+        const lines = text
+          .split(/\r?\n/)
+          .map((line) => line.replace(/\s+/g, " ").trim())
+          .filter(Boolean);
+        const noiseWords = /^(receipt|invoice|order|table|server|cashier|guest|terminal|auth|approved|visa|mastercard|amex|american express|thank|subtotal|total|tax|tip|change|balance|amount|date|time|qty|item)$/i;
+        const merchant = lines.find((line) => /[a-z]/i.test(line) && !noiseWords.test(line) && !/\d{2,}/.test(line.slice(0, 8))) || "";
+        const dateMatch = text.match(/\b(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})\b/);
+        const parsedDate = dateMatch ? normalizeReceiptDate(dateMatch[1], dateMatch[2], dateMatch[3]) : "";
+        const isFuel = isFuelReceiptText(text);
+        const fuelMath = isFuel ? parseFuelMath(lines) : null;
+        const amountLines = lines
+          .map((line) => {
+            return { line, amounts: parseMoneyValues(line) };
+          })
+          .filter((item) => item.amounts.length);
+        const amountResult = pickReceiptAmount(amountLines, isFuel, fuelMath);
+        const tipLine = amountLines.find((item) => /\b(tip|gratuity)\b/i.test(item.line));
+        const tip = tipLine ? Math.max(...tipLine.amounts) : 0;
+        const itemizedSignals = lines.filter((line) => /\b(qty|item|subtotal|sub total|tax)\b/i.test(line)).length;
+        const itemPriceLines = amountLines.filter((item) => !/\b(total|tax|tip|subtotal|balance|paid)\b/i.test(item.line)).length;
+        const receiptItemizedGuess = itemizedSignals > 0 || itemPriceLines >= 2;
+        const scanSource = `${merchant}\n${text}`;
+        const category = isFuel && categoryExists("Auto Expense- Jeramy Bailey") ? "Auto Expense- Jeramy Bailey" : suggestCategory(scanSource);
+        const businessPurpose = isFuel ? "Fuel" : suggestBusinessPurpose(scanSource, category);
+
+        return {
+          merchant,
+          amount: amountResult.amount ? amountResult.amount.toFixed(2) : "",
+          date: parsedDate,
+          category,
+          businessPurpose,
+          tip: tip ? tip.toFixed(2) : "",
+          receiptItemized: receiptItemizedGuess,
+          text,
+        };
+      }
+
+      function normalizeReceiptDate(month, day, year) {
+        const fullYear = Number(year) < 100 ? 2000 + Number(year) : Number(year);
+        const date = new Date(fullYear, Number(month) - 1, Number(day));
+        if (Number.isNaN(date.getTime())) return "";
+        return localDateKey(date);
+      }
+
+      function renderScanResults(scan) {
+        const categoryOptions = sortedCategories(loadCategories())
+          .map((category) => `<option value="${escapeAttribute(category.name)}" ${category.name === scan.category ? "selected" : ""}>${escapeHtml(category.name)}</option>`)
+          .join("");
+
+        scanResults.innerHTML = `
+          <li>
+            <label>Merchant
+              <input data-scan-field="merchant" value="${escapeAttribute(scan.merchant)}" placeholder="Review merchant" />
+            </label>
+          </li>
+          <li>
+            <label>Amount
+              <input data-scan-field="amount" inputmode="decimal" value="${escapeAttribute(scan.amount)}" placeholder="Review amount" />
+            </label>
+          </li>
+          <li>
+            <label>Date
+              <input data-scan-field="date" type="date" value="${escapeAttribute(scan.date)}" />
+            </label>
+          </li>
+          <li>
+            <label>Category
+              <select data-scan-field="category">
+                <option value="">Choose category</option>
+                ${categoryOptions}
+              </select>
+            </label>
+          </li>
+          <li>
+            <label>Business Purpose
+              <input data-scan-field="businessPurpose" value="${escapeAttribute(scan.businessPurpose)}" placeholder="Review purpose" />
+            </label>
+          </li>
+          <li>
+            <label class="checkbox-row">
+              <input data-scan-field="receiptItemized" type="checkbox" ${scan.receiptItemized ? "checked" : ""} />
+              Receipt is itemized
+            </label>
+          </li>
+        `;
+        scanResults.classList.remove("hidden");
+        scanText.value = scan.text;
+        scanText.classList.remove("hidden");
+        applyScanButton.classList.remove("hidden");
+      }
+
+      function reviewedScanValues() {
+        if (!lastReceiptScan) return null;
+        return {
+          ...lastReceiptScan,
+          merchant: scanResults.querySelector('[data-scan-field="merchant"]')?.value.trim() || "",
+          amount: scanResults.querySelector('[data-scan-field="amount"]')?.value.trim() || "",
+          date: scanResults.querySelector('[data-scan-field="date"]')?.value || "",
+          category: scanResults.querySelector('[data-scan-field="category"]')?.value || "",
+          businessPurpose: scanResults.querySelector('[data-scan-field="businessPurpose"]')?.value.trim() || "",
+          receiptItemized: Boolean(scanResults.querySelector('[data-scan-field="receiptItemized"]')?.checked),
+        };
+      }
+
+      function applyReceiptScan(scan = lastReceiptScan, overwrite = false) {
+        if (!scan) return;
+        if (scan.merchant && (overwrite || !merchantInput.value.trim())) merchantInput.value = scan.merchant;
+        if (scan.amount && (overwrite || !amountInput.value.trim())) amountInput.value = scan.amount;
+        if (scan.date) dateInput.value = scan.date;
+        if (scan.category && (overwrite || !categorySelect.value)) categorySelect.value = scan.category;
+        if (scan.businessPurpose && (overwrite || !purposeInput.value.trim())) purposeInput.value = scan.businessPurpose;
+        receiptItemized.checked = scan.receiptItemized;
+        const scanComment = scan.tip ? `OCR detected tip: $${scan.tip}` : "";
+        if (scanComment && !commentsInput.value.includes(scanComment)) {
+          commentsInput.value = commentsInput.value ? `${commentsInput.value}\n${scanComment}` : scanComment;
+        }
+      }
+
+      function loadTesseract() {
+        if (window.Tesseract) return Promise.resolve(window.Tesseract);
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+          script.async = true;
+          script.onload = () => resolve(window.Tesseract);
+          script.onerror = () => reject(new Error("OCR library could not be loaded."));
+          document.head.append(script);
+        });
+      }
+
+      async function scanReceiptImage() {
+        if (!receiptDataUrl) {
+          resetScanState("Attach a receipt before scanning.");
+          return;
+        }
+
+        scanReceiptButton.disabled = true;
+        applyScanButton.classList.add("hidden");
+        scanStatus.textContent = "Loading OCR...";
+
+        try {
+          const tesseract = await loadTesseract();
+          scanStatus.textContent = "Scanning receipt text...";
+          const result = await tesseract.recognize(receiptDataUrl, "eng", {
+            logger: (progress) => {
+              if (progress.status === "recognizing text") {
+                scanStatus.textContent = `Scanning receipt text... ${Math.round(progress.progress * 100)}%`;
+              }
+            },
+          });
+          lastReceiptScan = parseReceiptText(result.data.text || "");
+          renderScanResults(lastReceiptScan);
+          scanStatus.textContent = "Scan complete. Edit the fields, then apply them to the expense.";
+        } catch (error) {
+          scanStatus.textContent = "OCR is unavailable here. Try again when hosted online, or enter the fields manually.";
+          scanText.value = String(error.message || error);
+          scanText.classList.remove("hidden");
+        } finally {
+          scanReceiptButton.disabled = false;
+        }
+      }
+
+      function auditExpenses(expenses) {
+        return expenses.flatMap((expense) => {
+          const issues = [];
+          if (Number(expense.amount) > 25 && !expense.receiptDataUrl) {
+            issues.push({ expenseId: expense.id, message: `${expense.merchant} is over $25 and needs a receipt.` });
+          }
+          if (Number(expense.amount) > 25 && expense.receiptDataUrl && !isReceiptItemized(expense)) {
+            issues.push({ expenseId: expense.id, message: `${expense.merchant} has a receipt, but it is not marked itemized.` });
+          }
+          if (!expense.category) {
+            issues.push({ expenseId: expense.id, message: `${expense.merchant} needs a category.` });
+          }
+          if (!expense.businessPurpose) {
+            issues.push({ expenseId: expense.id, message: `${expense.merchant} needs a business purpose.` });
+          }
+          if (expense.comments.toLowerCase().includes("not itemized")) {
+            issues.push({ expenseId: expense.id, message: `${expense.merchant} may need an itemized receipt.` });
+          }
+          return issues;
+        });
+      }
+
+      function showPanel(panelName) {
+        document.querySelectorAll("[data-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === panelName));
+        document.querySelectorAll("[data-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.panel !== panelName));
+      }
+
+      function setPaymentType(nextPaymentType) {
+        paymentType = nextPaymentType;
+        document.querySelectorAll("[data-payment]").forEach((tab) => tab.classList.toggle("active", tab.dataset.payment === paymentType));
+      }
+
+      function setReceipt(nextReceiptDataUrl) {
+        receiptDataUrl = nextReceiptDataUrl || "";
+        receiptInput.value = "";
+        if (receiptDataUrl) {
+          receiptPreview.src = receiptDataUrl;
+          receiptPreview.style.display = "block";
+          receiptStatus.textContent = "Receipt attached";
+          scanPanel.classList.remove("hidden");
+          resetScanState("Receipt attached. Scanning will start automatically.");
+          clearReceipt.classList.remove("hidden");
+        } else {
+          receiptPreview.removeAttribute("src");
+          receiptPreview.style.display = "none";
+          receiptStatus.textContent = "No receipt attached";
+          scanPanel.classList.add("hidden");
+          resetScanState();
+          clearReceipt.classList.add("hidden");
+        }
+      }
+
+      function openReceiptModal() {
+        if (!receiptDataUrl) return;
+        receiptFullPreview.src = receiptDataUrl;
+        receiptModal.classList.remove("hidden");
+        closeReceiptModal.focus();
+      }
+
+      function closeFullReceiptPreview() {
+        receiptModal.classList.add("hidden");
+        receiptFullPreview.removeAttribute("src");
+      }
+
+      function isReceiptItemized(expense) {
+        return expense.receiptItemized !== false;
+      }
+
+      function receiptBadges(expense) {
+        const amount = Number(expense.amount || 0);
+        const required = amount > 25;
+        const attached = Boolean(expense.receiptDataUrl);
+        const itemized = isReceiptItemized(expense);
+        const badges = [];
+
+        if (required && !attached) badges.push({ label: "Receipt Required", tone: "warn" });
+        if (attached) badges.push({ label: "Receipt Attached", tone: "good" });
+        if (attached && !itemized) badges.push({ label: "Needs Itemized", tone: "warn" });
+        if (!required && !attached) badges.push({ label: "Receipt Optional", tone: "neutral" });
+        if (attached && itemized) badges.push({ label: "Itemized", tone: "good" });
+
+        return badges;
+      }
+
+      function renderReceiptVisual(expense) {
+        if (expense.receiptDataUrl) {
+          return `<img class="receipt-thumb" src="${escapeAttribute(expense.receiptDataUrl)}" alt="Receipt for ${escapeAttribute(expense.merchant)}" />`;
+        }
+
+        return `
+          <button class="receipt-placeholder" type="button" data-edit-expense="${escapeAttribute(expense.id)}" aria-label="Add receipt for ${escapeAttribute(expense.merchant)}">
+            <span>▣</span>
+            <span>No receipt</span>
+          </button>
+        `;
+      }
+
+      function downloadFile(filename, contents, mimeType, label) {
+        const dataUrl = `data:${mimeType},${encodeURIComponent(contents)}`;
+
+        hasExportPreview = true;
+        exportReadyText.textContent = `${label} ready: ${filename}`;
+        exportReadyLink.href = dataUrl;
+        exportReadyLink.download = filename;
+        exportReadyLink.textContent = `Download ${label}`;
+        exportPreview.value = contents;
+        copyExport.textContent = `Copy ${label}`;
+        setExportOpen(true);
+        exportReady.classList.remove("hidden");
+      }
+
+      function setExportOpen(isOpen) {
+        exportMenu.classList.toggle("hidden", !isOpen);
+        exportReady.classList.toggle("hidden", !isOpen || !hasExportPreview);
+        exportButton.setAttribute("aria-expanded", String(isOpen));
+      }
+
+      function csvCell(value) {
+        const text = value == null ? "" : String(value);
+        return `"${text.replaceAll('"', '""')}"`;
+      }
+
+      function expensesToCsv(expenses) {
+        const headers = [
+          "Report Month",
+          "Date",
+          "Merchant",
+          "Amount",
+          "Category",
+          "Business Purpose",
+          "Comments",
+          "Payment Type",
+          "Receipt Attached",
+          "Receipt Itemized",
+        ];
+
+        const rows = expenses.map((expense) => [
+          monthLabel(reportMonth.value),
+          expense.date,
+          expense.merchant,
+          Number(expense.amount || 0).toFixed(2),
+          expense.category,
+          expense.businessPurpose,
+          expense.comments,
+          expense.paymentType,
+          expense.receiptDataUrl ? "Yes" : "No",
+          isReceiptItemized(expense) ? "Yes" : "No",
+        ]);
+
+        return [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
+      }
+
+      function exportSelectedMonth(format) {
+        const expenses = selectedMonthExpenses();
+        if (format === "csv") {
+          downloadFile(`expense-snap-${reportMonth.value}.csv`, `\uFEFF${expensesToCsv(expenses)}`, "text/csv;charset=utf-8", "CSV");
+          return;
+        }
+
+        const exportData = {
+          schemaVersion: 1,
+          exportedAt: new Date().toISOString(),
+          reportMonth: reportMonth.value,
+          reportLabel: monthLabel(reportMonth.value),
+          expenses,
+          categories: loadCategories(),
+        };
+        downloadFile(`expense-snap-${reportMonth.value}.json`, JSON.stringify(exportData, null, 2), "application/json", "JSON");
+      }
+
+      function normalizeImportedCategories(rawCategories) {
+        if (!Array.isArray(rawCategories)) return [];
+        return uniqueCategories(rawCategories);
+      }
+
+      function mergeCategories(currentCategories, importedCategories) {
+        const merged = new Map();
+        currentCategories.forEach((category) => merged.set(category.name.toLowerCase(), category));
+        importedCategories.forEach((category) => merged.set(category.name.toLowerCase(), category));
+        return uniqueCategories([...merged.values()]);
+      }
+
+      function normalizeImportedExpenses(rawExpenses) {
+        if (!Array.isArray(rawExpenses)) return [];
+
+        return rawExpenses
+          .filter((expense) => expense && expense.date && expense.merchant && expense.amount)
+          .map((expense) => ({
+            id: expense.id || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+            merchant: String(expense.merchant || "").trim(),
+            amount: String(expense.amount || "").trim(),
+            date: String(expense.date || "").slice(0, 10),
+            category: String(expense.category || ""),
+            businessPurpose: String(expense.businessPurpose || ""),
+            comments: String(expense.comments || ""),
+            paymentType: expense.paymentType === "Out of Pocket" ? "Out of Pocket" : "Corporate Card",
+            receiptDataUrl: String(expense.receiptDataUrl || ""),
+            receiptItemized: expense.receiptItemized !== false,
+            createdAt: expense.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }));
+      }
+
+      function importBackup(contents) {
+        let parsed;
+        try {
+          parsed = JSON.parse(contents);
+        } catch {
+          alert("That file is not valid JSON.");
+          return;
+        }
+
+        const importedExpenses = normalizeImportedExpenses(Array.isArray(parsed) ? parsed : parsed.expenses);
+        const importedCategories = normalizeImportedCategories(Array.isArray(parsed) ? [] : parsed.categories);
+        if (!importedExpenses.length && !importedCategories.length) {
+          alert("No valid expenses or categories were found in that backup.");
+          return;
+        }
+
+        let importedMonth = reportMonth.value;
+        let expensesToImport = [];
+        let shouldReplace = false;
+
+        if (importedExpenses.length) {
+          importedMonth = parsed.reportMonth || monthKey(importedExpenses[0].date);
+          const sameMonthExpenses = importedExpenses.filter((expense) => monthKey(expense.date) === importedMonth);
+          expensesToImport = sameMonthExpenses.length ? sameMonthExpenses : importedExpenses;
+          const importLabel = monthLabel(importedMonth);
+          shouldReplace = confirm(`Import ${expensesToImport.length} expenses for ${importLabel}?\n\nOK = replace that month\nCancel = merge with existing expenses`);
+          const existingExpenses = loadExpenses();
+          const otherMonths = existingExpenses.filter((expense) => monthKey(expense.date) !== importedMonth);
+          const sameMonthExisting = existingExpenses.filter((expense) => monthKey(expense.date) === importedMonth);
+          const nextExpenses = shouldReplace ? [...otherMonths, ...expensesToImport] : [...otherMonths, ...sameMonthExisting, ...expensesToImport];
+          saveExpenses(nextExpenses);
+          reportMonth.value = importedMonth;
+          updatePeriodLabel();
+        }
+
+        if (importedCategories.length) {
+          saveCategories(mergeCategories(loadCategories(), importedCategories));
+        }
+
+        resetForm();
+        renderCategories();
+        render();
+        showPanel(importedExpenses.length ? "expenses" : "settings");
+        const expenseMessage = importedExpenses.length ? `${shouldReplace ? "Restored" : "Merged"} ${expensesToImport.length} expenses for ${monthLabel(importedMonth)}.` : "";
+        const categoryMessage = importedCategories.length ? `Imported ${importedCategories.length} categories and favorites.` : "";
+        alert([expenseMessage, categoryMessage].filter(Boolean).join("\n"));
+      }
+
+      function resetForm() {
+        editingExpenseId = "";
+        form.reset();
+        dateInput.value = defaultDateForMonth(reportMonth.value);
+        categorySelect.value = "";
+        receiptItemized.checked = true;
+        setPaymentType("Corporate Card");
+        setReceipt("");
+        formTitle.textContent = "New Expense";
+        saveButton.textContent = "+ Add Expense";
+        cancelEdit.classList.add("hidden");
+      }
+
+      function editExpense(expenseId) {
+        const expense = loadExpenses().find((item) => item.id === expenseId);
+        if (!expense) return;
+        editingExpenseId = expense.id;
+        merchantInput.value = expense.merchant;
+        amountInput.value = expense.amount;
+        dateInput.value = expense.date;
+        categorySelect.value = expense.category;
+        purposeInput.value = expense.businessPurpose;
+        commentsInput.value = expense.comments;
+        receiptItemized.checked = isReceiptItemized(expense);
+        setPaymentType(expense.paymentType);
+        setReceipt(expense.receiptDataUrl);
+        formTitle.textContent = `Edit ${expense.merchant}`;
+        saveButton.textContent = "Save Changes";
+        cancelEdit.classList.remove("hidden");
+        showPanel("capture");
+        merchantInput.focus();
+      }
+
+      function deleteExpense(expenseId) {
+        const expenses = loadExpenses();
+        const expense = expenses.find((item) => item.id === expenseId);
+        if (!expense) return;
+        if (!confirm(`Delete ${expense.merchant} for ${money(expense.amount)} from this browser?`)) return;
+        saveExpenses(expenses.filter((item) => item.id !== expenseId));
+        if (editingExpenseId === expenseId) resetForm();
+        render();
+      }
+
+      function render() {
+        const expenses = selectedMonthExpenses();
+        const issues = auditExpenses(expenses);
+        const total = expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
+
+        totalAmount.textContent = money(total);
+        expenseCount.textContent = String(expenses.length);
+        issueCount.textContent = String(issues.length);
+
+        expenseList.innerHTML = "";
+        expenses.forEach((expense) => {
+          const row = document.createElement("article");
+          row.className = "expense-row";
+          const badges = receiptBadges(expense)
+            .map((badge) => `<span class="pill ${badge.tone}">${escapeHtml(badge.label)}</span>`)
+            .join("");
+          row.innerHTML = `
+            ${renderReceiptVisual(expense)}
+            <div class="expense-meta">
+              <h3>${escapeHtml(expense.merchant)}</h3>
+              <p>${escapeHtml(expense.category || "No category")} · ${escapeHtml(expense.paymentType)}</p>
+              <div class="pill-row">${badges}</div>
+            </div>
+            <div class="expense-amount-actions">
+              <strong>${money(expense.amount)}</strong>
+              <div class="row-actions">
+                <button class="secondary-action" type="button" data-edit-expense="${escapeHtml(expense.id)}">Edit</button>
+                <button class="danger-action" type="button" data-delete-expense="${escapeHtml(expense.id)}">Delete</button>
+              </div>
+            </div>
+          `;
+          expenseList.append(row);
+        });
+        expenseEmpty.classList.toggle("hidden", expenses.length > 0);
+
+        auditList.innerHTML = "";
+        issues.forEach((issue) => {
+          const item = document.createElement("li");
+          const message = document.createElement("span");
+          message.textContent = issue.message;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.fixExpense = issue.expenseId;
+          button.textContent = "Fix Expense";
+          item.append(message, button);
+          auditList.append(item);
+        });
+        auditEmpty.classList.toggle("hidden", issues.length > 0);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value).replaceAll("`", "&#096;");
+      }
+
+      document.querySelectorAll("[data-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          showPanel(button.dataset.tab);
+        });
+      });
+
+      document.querySelectorAll("[data-payment]").forEach((button) => {
+        button.addEventListener("click", () => {
+          setPaymentType(button.dataset.payment);
+        });
+      });
+
+      reportMonth.addEventListener("change", () => {
+        updatePeriodLabel();
+        if (!editingExpenseId) dateInput.value = defaultDateForMonth(reportMonth.value);
+        render();
+      });
+
+      previousMonth.addEventListener("click", () => shiftReportMonth(-1));
+      nextMonth.addEventListener("click", () => shiftReportMonth(1));
+
+      merchantInput.addEventListener("input", () => {
+        if (!categorySelect.value) {
+          categorySelect.value = suggestCategory(merchantInput.value);
+        }
+      });
+
+      receiptInput.addEventListener("change", () => {
+        const file = receiptInput.files && receiptInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          setReceipt(String(reader.result));
+          scanReceiptImage();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      clearReceipt.addEventListener("click", () => {
+        setReceipt("");
+      });
+
+      receiptPreview.addEventListener("click", openReceiptModal);
+      closeReceiptModal.addEventListener("click", closeFullReceiptPreview);
+      receiptModal.addEventListener("click", (event) => {
+        if (event.target === receiptModal) closeFullReceiptPreview();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !receiptModal.classList.contains("hidden")) closeFullReceiptPreview();
+      });
+
+      scanReceiptButton.addEventListener("click", scanReceiptImage);
+      applyScanButton.addEventListener("click", () => {
+        applyReceiptScan(reviewedScanValues(), true);
+        scanStatus.textContent = "Scan values applied. Review before saving.";
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const expenses = loadExpenses();
+        const savedExpense = {
+          id: editingExpenseId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+          merchant: merchantInput.value.trim(),
+          amount: amountInput.value.trim(),
+          date: dateInput.value,
+          category: categorySelect.value,
+          businessPurpose: purposeInput.value.trim(),
+          comments: commentsInput.value.trim(),
+          paymentType,
+          receiptDataUrl,
+          receiptItemized: receiptItemized.checked,
+          createdAt: editingExpenseId ? expenses.find((expense) => expense.id === editingExpenseId)?.createdAt || new Date().toISOString() : new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        if (editingExpenseId) {
+          const index = expenses.findIndex((expense) => expense.id === editingExpenseId);
+          if (index >= 0) expenses[index] = savedExpense;
+        } else {
+          expenses.unshift(savedExpense);
+        }
+
+        saveExpenses(expenses);
+        resetForm();
+        render();
+      });
+
+      cancelEdit.addEventListener("click", resetForm);
+
+      auditList.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-fix-expense]");
+        if (!button) return;
+        editExpense(button.dataset.fixExpense);
+      });
+
+      expenseList.addEventListener("click", (event) => {
+        const editButton = event.target.closest("[data-edit-expense]");
+        if (editButton) {
+          editExpense(editButton.dataset.editExpense);
+          return;
+        }
+
+        const deleteButton = event.target.closest("[data-delete-expense]");
+        if (deleteButton) {
+          deleteExpense(deleteButton.dataset.deleteExpense);
+        }
+      });
+
+      document.querySelector("#runAudit").addEventListener("click", render);
+
+      document.querySelector("#clearAll").addEventListener("click", () => {
+        const label = monthLabel(reportMonth.value);
+        if (!confirm(`Clear all ${label} prototype expenses from this browser?`)) return;
+        saveExpenses(loadExpenses().filter((expense) => monthKey(expense.date) !== reportMonth.value));
+        resetForm();
+        render();
+      });
+
+      categoryForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const nextCategory = categoryName.value.trim();
+        if (!nextCategory) return;
+
+        const categories = loadCategories();
+        if (categories.some((category) => category.name.toLowerCase() === nextCategory.toLowerCase())) {
+          alert("That category already exists.");
+          categoryName.select();
+          return;
+        }
+
+        saveCategories([...categories, { name: nextCategory, favorite: false }]);
+        categoryForm.reset();
+        renderCategories();
+      });
+
+      categoryList.addEventListener("click", (event) => {
+        const favoriteButton = event.target.closest("[data-toggle-favorite]");
+        if (favoriteButton) {
+          const categoryNameToToggle = favoriteButton.dataset.toggleFavorite;
+          const categories = loadCategories().map((category) => {
+            if (category.name !== categoryNameToToggle) return category;
+            return { ...category, favorite: !category.favorite };
+          });
+          saveCategories(categories);
+          renderCategories();
+          return;
+        }
+
+        const deleteButton = event.target.closest("[data-delete-category]");
+        if (deleteButton) {
+          const categoryNameToDelete = deleteButton.dataset.deleteCategory;
+          const isUsed = loadExpenses().some((expense) => expense.category === categoryNameToDelete);
+          const message = isUsed
+            ? `Delete ${categoryNameToDelete}? Existing expenses using it will keep that text, but it will be removed from the picker.`
+            : `Delete ${categoryNameToDelete} from the category picker?`;
+          if (!confirm(message)) return;
+          saveCategories(loadCategories().filter((category) => category.name !== categoryNameToDelete));
+          if (categorySelect.value === categoryNameToDelete) categorySelect.value = "";
+          renderCategories();
+        }
+      });
+
+      resetCategories.addEventListener("click", () => {
+        if (!confirm("Reset the category list and favorites to the SPOC prototype defaults?")) return;
+        saveCategories(defaultCategories);
+        renderCategories();
+      });
+
+      exportButton.addEventListener("click", () => {
+        setExportOpen(exportMenu.classList.contains("hidden"));
+      });
+
+      exportMenu.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-export-format]");
+        if (!button) return;
+        exportSelectedMonth(button.dataset.exportFormat);
+      });
+
+      importJsonButton.addEventListener("click", () => {
+        importJsonInput.value = "";
+        importJsonInput.click();
+      });
+
+      importJsonInput.addEventListener("change", () => {
+        const file = importJsonInput.files && importJsonInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => importBackup(String(reader.result));
+        reader.readAsText(file);
+      });
+
+      copyExport.addEventListener("click", async () => {
+        exportPreview.select();
+        try {
+          await navigator.clipboard.writeText(exportPreview.value);
+          copyExport.textContent = "Copied";
+        } catch {
+          document.execCommand("copy");
+          copyExport.textContent = "Copied";
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+        if (event.target.closest("#exportButton") || event.target.closest("#exportMenu") || event.target.closest("#exportReady")) return;
+        setExportOpen(false);
+      });
+
+      document.querySelector("#voiceButton").addEventListener("click", () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          alert("Voice input is not available in this browser yet.");
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          commentsInput.value = commentsInput.value ? `${commentsInput.value}\nVoice: ${transcript}` : `Voice: ${transcript}`;
+          const amount = transcript.match(/\$?(\d+(?:\.\d{1,2})?)/);
+          if (amount && !amountInput.value) amountInput.value = amount[1];
+          if (!purposeInput.value && /dinner|meal|lunch/i.test(transcript)) purposeInput.value = "Business Dinner";
+        };
+        recognition.start();
+      });
+
+      if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      }
+
+      renderCategories();
+      render();
+    </script>
+  </body>
+</html>
